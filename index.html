@@ -3,236 +3,704 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#000000">
+    <meta name="theme-color" content="#0f172a">
     <link rel="manifest" href="manifest.json">
-    <title>Kamera Ilova</title>
+    <title>Web API Laboratoriya</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: #111;
-            color: #fff;
+            background: #0f172a;
+            color: #e2e8f0;
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
             padding: 16px;
-            gap: 16px;
+            padding-bottom: 80px;
         }
-
         h1 {
-            font-size: 20px;
-            font-weight: 600;
+            font-size: 22px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #38bdf8;
         }
-
-        #videoWrapper {
-            position: relative;
-            width: 100%;
-            max-width: 640px;
-            aspect-ratio: 4 / 3;
-            background: #000;
+        .api-karta {
+            background: #1e293b;
             border-radius: 12px;
-            overflow: hidden;
+            padding: 16px;
+            margin-bottom: 16px;
+            border: 1px solid #334155;
+        }
+        .api-karta h2 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #f1f5f9;
             display: flex;
             align-items: center;
-            justify-content: center;
+            gap: 8px;
         }
-
+        .api-karta h2 span {
+            background: #38bdf8;
+            color: #0f172a;
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-weight: 700;
+        }
+        .api-karta button {
+            background: #3b82f6;
+            color: #fff;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            transition: opacity 0.2s;
+        }
+        .api-karta button:active { opacity: 0.7; }
+        .api-karta button:disabled { opacity: 0.4; cursor: not-allowed; }
+        .api-karta button.danger { background: #ef4444; }
+        .api-karta button.success { background: #22c55e; }
+        .api-karta button.warning { background: #f59e0b; }
+        .natija-box {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-top: 10px;
+            font-size: 13px;
+            font-family: ui-monospace, monospace;
+            color: #94a3b8;
+            min-height: 36px;
+            word-break: break-all;
+            white-space: pre-wrap;
+        }
+        #videoWrapper {
+            width: 100%;
+            aspect-ratio: 4/3;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
         #ekran {
             width: 100%;
             height: 100%;
             object-fit: cover;
             display: block;
-            /* OYNA EFFEKTI - faqat old kamera uchun */
             transform: scaleX(-1);
         }
-
-        /* Orqa kamera yoqilganda oyna effekti o'chadi */
-        #ekran.orqa-kamera {
-            transform: scaleX(1);
-        }
-
-        #natija {
-            font-size: 14px;
-            color: #ff6b6b;
-            text-align: center;
-            min-height: 20px;
-            max-width: 640px;
-            word-break: break-word;
-        }
-
-        .tugmalar {
+        #ekran.orqa-kamera { transform: scaleX(1); }
+        .tugmalar-qatori {
             display: flex;
-            gap: 12px;
             flex-wrap: wrap;
-            justify-content: center;
+            gap: 8px;
+        }
+        .tugmalar-qatori button { flex: 1; min-width: 120px; }
+        .xarita {
             width: 100%;
-            max-width: 640px;
+            height: 200px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            margin-top: 10px;
+            background: #1e293b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            font-size: 14px;
         }
-
-        button {
-            flex: 1;
-            min-width: 140px;
-            padding: 14px 20px;
-            font-size: 15px;
-            font-weight: 600;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: transform 0.1s, opacity 0.2s;
-            color: #fff;
+        .rang-namuna {
+            width: 100%;
+            height: 60px;
+            border-radius: 8px;
+            margin-top: 10px;
+            border: 1px solid #334155;
         }
-
-        button:active {
-            transform: scale(0.97);
+        .indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ef4444;
+            margin-right: 6px;
         }
-
-        button:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
-
-        #kamerani-yoq {
-            background: #2ecc71;
-        }
-
-        #kamerani-uchir {
-            background: #e74c3c;
-        }
-
-        #kamerani-almashtir {
-            background: #3498db;
-        }
+        .indicator.yoniq { background: #22c55e; }
     </style>
 </head>
 <body>
-    <h1>📷 Kamera Ilova</h1>
 
-    <div id="videoWrapper">
-        <video id="ekran" autoplay playsinline muted></video>
+    <h1>🔬 Web API Laboratoriya</h1>
+
+    <!-- ============================================ -->
+    <!-- 1. KAMERA (MediaDevices API) -->
+    <!-- ============================================ -->
+    <div class="api-karta">
+        <h2>📷 Kamera <span>MediaDevices</span></h2>
+        <div id="videoWrapper">
+            <video id="ekran" autoplay playsinline muted></video>
+        </div>
+        <div class="tugmalar-qatori">
+            <button id="kamerani-yoq" class="success">Old Kamerani Yoq</button>
+            <button id="kamerani-orqa" class="warning">Orqa Kamerani Yoq</button>
+            <button id="kamerani-uchir" class="danger" disabled>O'chirish</button>
+        </div>
+        <div class="natija-box" id="kamera-natija">Kamera holati: o'chiq</div>
     </div>
 
-    <p id="natija"></p>
+    <!-- ============================================ -->
+    <!-- 2. GEOGRAFIYA (Geolocation API) -->
+    <!-- ============================================ -->
+    <div class="api-karta">
+        <h2>📍 Geolokatsiya <span>Geolocation</span></h2>
+        <button id="joyni-olish" class="success">Joylashuvni Olish</button>
+        <button id="joyni-kuzatish" class="warning">Kuzatishni Yoq</button>
+        <button id="joyni-toxtatish" class="danger" disabled>To'xtatish</button>
+        <div class="natija-box" id="geolokatsiya-natija">Joylashuv olinmagan</div>
+    </div>
 
-    <div class="tugmalar">
-        <button id="kamerani-yoq">KAMERANI YOQ</button>
-        <button id="kamerani-uchir" disabled>KAMERANI O'CHIR</button>
-        <button id="kamerani-almashtir" disabled>ALMASHTIRISH</button>
+    <!-- ============================================ -->
+    <!-- 3. BATAREYA (Battery Status API) -->
+    <!-- ============================================ -->
+    <div class="api-karta">
+        <h2>🔋 Batareya <span>Battery Status</span></h2>
+        <button id="batareyani-tekshir" class="success">Batareyani Tekshir</button>
+        <div class="natija-box" id="batareya-natija">Batareya ma'lumotlari olinmagan</div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- 4. ILOVAGA O'RNATISH (BeforeInstallPrompt) -->
+    <!-- ============================================ -->
+    <div class="api-karta">
+        <h2>📲 Ilovaga O'rnatish <span>Install Prompt</span></h2>
+        <button id="ornatish-tugma" class="success" disabled>Ilovani O'rnatish</button>
+        <div class="natija-box" id="ornatish-natija">O'rnatish imkoniyati tekshirilmoqda...</div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- 5. VIBRATSIYA (Vibration API) -->
+    <!-- ============================================ -->
+    <div class="api-karta">
+        <h2>📳 Vibratsiya <span>Vibration</span></h2>
+        <button id="vibratsiya-qisqa">Qisqa (100ms)</button>
+        <button id="vibratsiya-uzun" class="warning">Uzun (500ms)</button>
+        <button id="vibratsiya-naqsh" class="danger">Naqsh</button>
+        <div class="natija-box" id="vibratsiya-natija">Vibratsiya holati</div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- 6. ALMASHISH BUFERI (Clipboard API) -->
+    <!-- ============================================ -->
+    <div class="api-karta">
+        <h2>📋 Clipboard <span>Clipboard API</span></h2>
+        <textarea id="clipboard-matn" placeholder="Matn kiriting..." style="width:100%;padding:8px;border-radius:8px;border:1px solid #334155;background:#0f172a;color:#e2e8f0;font-family:monospace;font-size:13px;resize:vertical;" rows="2"></textarea>
+        <div class="tugmalar-qatori" style="margin-top:8px;">
+            <button id="clipboard-yoz" class="success">Nusxalash</button>
+            <button id="clipboard-oqi">O'qish</button>
+        </div>
+        <div class="natija-box" id="clipboard-natija">Clipboard holati</div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- 7. TARMOQ HOLATI (Network Information API) -->
+    <!-- ============================================ -->
+    <div class="api-karta">
+        <h2>🌐 Tarmoq <span>Network Information</span></h2>
+        <button id="tarmoqni-tekshir" class="success">Tarmoqni Tekshir</button>
+        <div class="natija-box" id="tarmoq-natija">Tarmoq ma'lumotlari olinmagan</div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- 8. EKRAN YOQILISHINI BLOKLASH (Wake Lock API) -->
+    <!-- ============================================ -->
+    <div class="api-karta">
+        <h2>💡 Ekran Uyg'oq <span>Wake Lock</span></h2>
+        <button id="wakelock-yoq" class="success">Uyg'oq Tutishni Yoq</button>
+        <button id="wakelock-uchir" class="danger" disabled>O'chirish</button>
+        <div class="natija-box" id="wakelock-natija">Wake Lock holati: o'chiq</div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- 9. EKRAN RANGLARINI OLISH (EyeDropper API) -->
+    <!-- ============================================ -->
+    <div class="api-karta">
+        <h2>🎨 Rang Tanlash <span>EyeDropper</span></h2>
+        <button id="rang-tanlash" class="success">Rang Tanlash</button>
+        <div class="rang-namuna" id="rang-namuna"></div>
+        <div class="natija-box" id="rang-natija">Rang tanlanmagan</div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- 10. QURILMA YO'NALISHI (Device Orientation API) -->
+    <!-- ============================================ -->
+    <div class="api-karta">
+        <h2>🧭 Qurilma Yo'nalishi <span>Device Orientation</span></h2>
+        <button id="orientation-yoq" class="success">Yoqish</button>
+        <button id="orientation-uchir" class="danger" disabled>O'chirish</button>
+        <div class="natija-box" id="orientation-natija">Orientation holati: o'chiq</div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- 11. TITRASH SENSORI (Device Motion API) -->
+    <!-- ============================================ -->
+    <div class="api-karta">
+        <h2>📊 Harakat Sensori <span>Device Motion</span></h2>
+        <button id="motion-yoq" class="success">Yoqish</button>
+        <button id="motion-uchir" class="danger" disabled>O'chirish</button>
+        <div class="natija-box" id="motion-natija">Motion holati: o'chiq</div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- 12. BILDIRISHNOMALAR (Notifications API) -->
+    <!-- ============================================ -->
+    <div class="api-karta">
+        <h2>🔔 Bildirishnomalar <span>Notifications</span></h2>
+        <button id="notif-ruk sat" class="success">Ruxsat So'rash</button>
+        <button id="notif-yuborish" disabled>Bildirishnoma Yuborish</button>
+        <div class="natija-box" id="notif-natija">Bildirishnoma holati: tekshirilmagan</div>
     </div>
 
     <script>
-        const videoElement = document.getElementById("ekran");
-        const natijaElement = document.getElementById("natija");
-        const tugmaYOQ = document.getElementById("kamerani-yoq");
-        const tugmaUCHIR = document.getElementById("kamerani-uchir");
-        const tugmaALMASHTIR = document.getElementById("kamerani-almashtir");
-
-        let stream = null;
-        let joriyKamera = "user"; // "user" = old, "environment" = orqa
-
-        // Xatoliklarni chiqarish
-        function xatolik(matn) {
-            natijaElement.textContent = matn;
+        // ============================================
+        // YORDAMCHI FUNKSIYALAR
+        // ============================================
+        function $(id) { return document.getElementById(id); }
+        function xabar(elId, matn) {
+            const el = $(elId);
+            if (el) el.textContent = matn;
         }
 
-        function tozalash() {
-            natijaElement.textContent = "";
-        }
+        // ============================================
+        // 1. KAMERA — MediaDevices API
+        // ============================================
+        let kameraStream = null;
 
-        // Kamera oqimini to'xtatish
         function kameraniToxtat() {
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-                stream = null;
+            if (kameraStream) {
+                kameraStream.getTracks().forEach(t => t.stop());
+                kameraStream = null;
             }
-            videoElement.srcObject = null;
+            $("ekran").srcObject = null;
+            $("kamerani-uchir").disabled = true;
+            $("kamerani-yoq").disabled = false;
+            $("kamerani-orqa").disabled = false;
+            xabar("kamera-natija", "Kamera holati: o'chiq");
         }
 
-        // Tugmalar holatini yangilash
-        function tugmalarniYangilash(aktiv) {
-            tugmaYOQ.disabled = aktiv;
-            tugmaUCHIR.disabled = !aktiv;
-            tugmaALMASHTIR.disabled = !aktiv;
-        }
-
-        // Kamerani yoqish
-        async function kameraniYoq(facingMode = "user") {
-            tozalash();
+        async function kameraniYoq(facingMode) {
             kameraniToxtat();
-
-            // MediaDevices mavjudligini tekshirish
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                xatolik("Brauzeringiz kamerani qo'llab-quvvatlamaydi yoki HTTPS kerak.");
-                return;
-            }
-
             try {
-                stream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: { ideal: facingMode },
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    },
+                kameraStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: { ideal: facingMode } },
                     audio: false
                 });
-
-                videoElement.srcObject = stream;
-                joriyKamera = facingMode;
-
-                // OYNA EFFEKTI: old kamera uchun yoqiladi, orqa kamera uchun o'chiriladi
+                $("ekran").srcObject = kameraStream;
+                $("kamerani-uchir").disabled = false;
+                $("kamerani-yoq").disabled = true;
+                $("kamerani-orqa").disabled = true;
                 if (facingMode === "user") {
-                    videoElement.classList.remove("orqa-kamera");
+                    $("ekran").classList.remove("orqa-kamera");
                 } else {
-                    videoElement.classList.add("orqa-kamera");
+                    $("ekran").classList.add("orqa-kamera");
                 }
-
-                tugmalarniYangilash(true);
+                xabar("kamera-natija", `Kamera holati: yoqilgan (${facingMode === "user" ? "old" : "orqa"})`);
             } catch (err) {
-                let xabar = "Kamerani ochishda xatolik: ";
-                if (err.name === "NotAllowedError") {
-                    xabar += "Ruxsat berilmagan. Iltimos, brauzer sozlamalaridan kameraga ruxsat bering.";
-                } else if (err.name === "NotFoundError") {
-                    xabar += "Kamera topilmadi.";
-                } else if (err.name === "NotReadableError") {
-                    xabar += "Kamera boshqa ilova tomonidan band.";
-                } else {
-                    xabar += err.message || err.name;
-                }
-                xatolik(xabar);
-                tugmalarniYangilash(false);
+                xabar("kamera-natija", `Xatolik: ${err.name} — ${err.message}`);
             }
         }
 
-        // Kamerani o'chirish
-        function kameraniUchir() {
+        $("kamerani-yoq").addEventListener("click", () => kameraniYoq("user"));
+        $("kamerani-orqa").addEventListener("click", () => kameraniYoq("environment"));
+        $("kamerani-uchir").addEventListener("click", kameraniToxtat);
+
+        // ============================================
+        // 2. GEOLOKATSIYA — Geolocation API
+        // ============================================
+        let geolokatsiyaWatchId = null;
+
+        $("joyni-olish").addEventListener("click", () => {
+            if (!navigator.geolocation) {
+                xabar("geolokatsiya-natija", "Geolokatsiya qo'llab-quvvatlanmaydi");
+                return;
+            }
+            xabar("geolokatsiya-natija", "Joylashuv olinmoqda...");
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const c = pos.coords;
+                    xabar("geolokatsiya-natija",
+                        `Lat: ${c.latitude.toFixed(6)}\n` +
+                        `Lng: ${c.longitude.toFixed(6)}\n` +
+                        `Aniqlik: ${c.accuracy.toFixed(1)} m`
+                    );
+                },
+                (err) => xabar("geolokatsiya-natija", `Xatolik: ${err.message}`),
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            );
+        });
+
+        $("joyni-kuzatish").addEventListener("click", () => {
+            if (!navigator.geolocation) {
+                xabar("geolokatsiya-natija", "Geolokatsiya qo'llab-quvvatlanmaydi");
+                return;
+            }
+            geolokatsiyaWatchId = navigator.geolocation.watchPosition(
+                (pos) => {
+                    const c = pos.coords;
+                    xabar("geolokatsiya-natija",
+                        `📍 Kuzatish (WatchPosition)\n` +
+                        `Lat: ${c.latitude.toFixed(6)}\n` +
+                        `Lng: ${c.longitude.toFixed(6)}\n` +
+                        `Aniqlik: ${c.accuracy.toFixed(1)} m`
+                    );
+                },
+                (err) => xabar("geolokatsiya-natija", `Xatolik: ${err.message}`),
+                { enableHighAccuracy: true }
+            );
+            $("joyni-toxtatish").disabled = false;
+            $("joyni-kuzatish").disabled = true;
+        });
+
+        $("joyni-toxtatish").addEventListener("click", () => {
+            if (geolokatsiyaWatchId !== null) {
+                navigator.geolocation.clearWatch(geolokatsiyaWatchId);
+                geolokatsiyaWatchId = null;
+            }
+            $("joyni-toxtatish").disabled = true;
+            $("joyni-kuzatish").disabled = false;
+            xabar("geolokatsiya-natija", "Kuzatish to'xtatildi");
+        });
+
+        // ============================================
+        // 3. BATAREYA — Battery Status API
+        // ============================================
+        $("batareyani-tekshir").addEventListener("click", async () => {
+            if (!navigator.getBattery) {
+                xabar("batareya-natija", "Battery Status API qo'llab-quvvatlanmaydi (faqat Chrome/Edge)");
+                return;
+            }
+            try {
+                const batareya = await navigator.getBattery();
+                function yangilash() {
+                    const foiz = Math.round(batareya.level * 100);
+                    const holat = batareya.charging ? "🔌 Quvvatlanmoqda" : "🔋 Quvvatda";
+                    xabar("batareya-natija",
+                        `${holat}\n` +
+                        `Daraja: ${foiz}%\n` +
+                        `Quvvatlanish vaqti: ${batareya.chargingTime === Infinity ? "—" : batareya.chargingTime + "s"}\n` +
+                        `Tugash vaqti: ${batareya.dischargingTime === Infinity ? "—" : batareya.dischargingTime + "s"}`
+                    );
+                }
+                yangilash();
+                batareya.addEventListener("levelchange", yangilash);
+                batareya.addEventListener("chargingchange", yangilash);
+            } catch (err) {
+                xabar("batareya-natija", `Xatolik: ${err.message}`);
+            }
+        });
+
+        // ============================================
+        // 4. O'RNATISH — BeforeInstallPrompt API
+        // ============================================
+        let deferredInstallPrompt = null;
+
+        window.addEventListener("beforeinstallprompt", (e) => {
+            e.preventDefault();
+            deferredInstallPrompt = e;
+            $("ornatish-tugma").disabled = false;
+            xabar("ornatish-natija", "✅ Ilovani o'rnatish imkoniyati mavjud");
+        });
+
+        $("ornatish-tugma").addEventListener("click", async () => {
+            if (!deferredInstallPrompt) return;
+            deferredInstallPrompt.prompt();
+            const natija = await deferredInstallPrompt.userChoice;
+            xabar("ornatish-natija", `Foydalanuvchi tanlovi: ${natija.outcome}`);
+            deferredInstallPrompt = null;
+            $("ornatish-tugma").disabled = true;
+        });
+
+        window.addEventListener("appinstalled", () => {
+            xabar("ornatish-natija", "🎉 Ilova muvaffaqiyatli o'rnatildi!");
+            $("ornatish-tugma").disabled = true;
+        });
+
+        // Agar allaqachon o'rnatilgan bo'lsa
+        if (window.matchMedia("(display-mode: standalone)").matches) {
+            xabar("ornatish-natija", "📱 Ilova allaqachon o'rnatilgan (standalone mode)");
+            $("ornatish-tugma").disabled = true;
+        }
+
+        // ============================================
+        // 5. VIBRATSIYA — Vibration API
+        // ============================================
+        $("vibratsiya-qisqa").addEventListener("click", () => {
+            if (!navigator.vibrate) {
+                xabar("vibratsiya-natija", "Vibration API qo'llab-quvvatlanmaydi");
+                return;
+            }
+            navigator.vibrate(100);
+            xabar("vibratsiya-natija", "📳 100ms vibratsiya yuborildi");
+        });
+
+        $("vibratsiya-uzun").addEventListener("click", () => {
+            if (!navigator.vibrate) {
+                xabar("vibratsiya-natija", "Vibration API qo'llab-quvvatlanmaydi");
+                return;
+            }
+            navigator.vibrate(500);
+            xabar("vibratsiya-natija", "📳 500ms vibratsiya yuborildi");
+        });
+
+        $("vibratsiya-naqsh").addEventListener("click", () => {
+            if (!navigator.vibrate) {
+                xabar("vibratsiya-natija", "Vibration API qo'llab-quvvatlanmaydi");
+                return;
+            }
+            navigator.vibrate([200, 100, 200, 100, 400]);
+            xabar("vibratsiya-natija", "📳 Naqsh: 200-100-200-100-400 ms");
+        });
+
+        // ============================================
+        // 6. CLIPBOARD — Clipboard API
+        // ============================================
+        $("clipboard-yoz").addEventListener("click", async () => {
+            const matn = $("clipboard-matn").value;
+            if (!matn) { xabar("clipboard-natija", "Matn bo'sh"); return; }
+            try {
+                await navigator.clipboard.writeText(matn);
+                xabar("clipboard-natija", "✅ Matn clipboard'ga nusxalandi");
+            } catch (err) {
+                xabar("clipboard-natija", `Xatolik: ${err.message}`);
+            }
+        });
+
+        $("clipboard-oqi").addEventListener("click", async () => {
+            try {
+                const matn = await navigator.clipboard.readText();
+                $("clipboard-matn").value = matn;
+                xabar("clipboard-natija", `📋 O'qildi: "${matn}"`);
+            } catch (err) {
+                xabar("clipboard-natija", `O'qishda xatolik: ${err.message}`);
+            }
+        });
+
+        // ============================================
+        // 7. TARMOQ — Network Information API
+        // ============================================
+        $("tarmoqni-tekshir").addEventListener("click", () => {
+            if (!navigator.connection) {
+                xabar("tarmoq-natija", "Network Information API qo'llab-quvvatlanmaydi (Chrome/Edge)");
+                return;
+            }
+            const c = navigator.connection;
+            xabar("tarmoq-natija",
+                `📶 Tur: ${c.effectiveType || "—"}\n` +
+                `⬇️ Yuklab olish: ${c.downlink ? c.downlink + " Mbps" : "—"}\n` +
+                `⏱️ RTT: ${c.rtt ? c.rtt + " ms" : "—"}\n` +
+                `💾 Data Saver: ${c.saveData ? "Yoqilgan" : "O'chirilgan"}\n` +
+                `🌐 Onlayn: ${navigator.onLine ? "Ha" : "Yo'q"}`
+            );
+        });
+
+        // ============================================
+        // 8. WAKE LOCK — Screen Wake Lock API
+        // ============================================
+        let wakeLockSentinel = null;
+
+        $("wakelock-yoq").addEventListener("click", async () => {
+            if (!("wakeLock" in navigator)) {
+                xabar("wakelock-natija", "Wake Lock API qo'llab-quvvatlanmaydi");
+                return;
+            }
+            try {
+                wakeLockSentinel = await navigator.wakeLock.request("screen");
+                $("wakelock-uchir").disabled = false;
+                $("wakelock-yoq").disabled = true;
+                xabar("wakelock-natija", "💡 Ekran uyg'oq tutish yoqilgan");
+                wakeLockSentinel.addEventListener("release", () => {
+                    xabar("wakelock-natija", "Wake Lock avtomatik o'chirildi");
+                    $("wakelock-uchir").disabled = true;
+                    $("wakelock-yoq").disabled = false;
+                });
+            } catch (err) {
+                xabar("wakelock-natija", `Xatolik: ${err.message}`);
+            }
+        });
+
+        $("wakelock-uchir").addEventListener("click", async () => {
+            if (wakeLockSentinel) {
+                await wakeLockSentinel.release();
+                wakeLockSentinel = null;
+            }
+            $("wakelock-uchir").disabled = true;
+            $("wakelock-yoq").disabled = false;
+            xabar("wakelock-natija", "Wake Lock o'chirildi");
+        });
+
+        // ============================================
+        // 9. RANG TANLASH — EyeDropper API
+        // ============================================
+        $("rang-tanlash").addEventListener("click", async () => {
+            if (!window.EyeDropper) {
+                xabar("rang-natija", "EyeDropper API qo'llab-quvvatlanmaydi (Chrome/Edge)");
+                return;
+            }
+            try {
+                const eyeDropper = new EyeDropper();
+                const natija = await eyeDropper.open();
+                const rang = natija.sRGBHex;
+                $("rang-namuna").style.background = rang;
+                xabar("rang-natija", `🎨 Tanlangan rang: ${rang}`);
+            } catch (err) {
+                xabar("rang-natija", `Xatolik yoki bekor qilindi: ${err.message}`);
+            }
+        });
+
+        // ============================================
+        // 10. QURILMA YO'NALISHI — Device Orientation API
+        // ============================================
+        function orientationHandler(e) {
+            xabar("orientation-natija",
+                `🧭 Qurilma Yo'nalishi\n` +
+                `Alpha (Z): ${e.alpha?.toFixed(2) ?? "—"}°\n` +
+                `Beta (X): ${e.beta?.toFixed(2) ?? "—"}°\n` +
+                `Gamma (Y): ${e.gamma?.toFixed(2) ?? "—"}°\n` +
+                `Absolute: ${e.absolute}`
+            );
+        }
+
+        $("orientation-yoq").addEventListener("click", async () => {
+            if (!window.DeviceOrientationEvent) {
+                xabar("orientation-natija", "Device Orientation qo'llab-quvvatlanmaydi");
+                return;
+            }
+            // iOS 13+ uchun ruxsat so'rash
+            if (typeof DeviceOrientationEvent.requestPermission === "function") {
+                try {
+                    const ruxsat = await DeviceOrientationEvent.requestPermission();
+                    if (ruxsat !== "granted") {
+                        xabar("orientation-natija", "Ruxsat berilmagan");
+                        return;
+                    }
+                } catch (err) {
+                    xabar("orientation-natija", `Ruxsat xatoligi: ${err.message}`);
+                    return;
+                }
+            }
+            window.addEventListener("deviceorientation", orientationHandler);
+            $("orientation-yoq").disabled = true;
+            $("orientation-uchir").disabled = false;
+            xabar("orientation-natija", "Orientation yoqildi — qurilmani buring...");
+        });
+
+        $("orientation-uchir").addEventListener("click", () => {
+            window.removeEventListener("deviceorientation", orientationHandler);
+            $("orientation-yoq").disabled = false;
+            $("orientation-uchir").disabled = true;
+            xabar("orientation-natija", "Orientation o'chirildi");
+        });
+
+        // ============================================
+        // 11. HARAKAT SENSORI — Device Motion API
+        // ============================================
+        function motionHandler(e) {
+            const acc = e.acceleration;
+            const accG = e.accelerationIncludingGravity;
+            xabar("motion-natija",
+                `📊 Harakat Sensori\n` +
+                `Acceleration: X=${acc?.x?.toFixed(2) ?? "—"}, Y=${acc?.y?.toFixed(2) ?? "—"}, Z=${acc?.z?.toFixed(2) ?? "—"}\n` +
+                `Gravity: X=${accG?.x?.toFixed(2) ?? "—"}, Y=${accG?.y?.toFixed(2) ?? "—"}, Z=${accG?.z?.toFixed(2) ?? "—"}\n` +
+                `Interval: ${e.interval?.toFixed(0) ?? "—"} ms`
+            );
+        }
+
+        $("motion-yoq").addEventListener("click", async () => {
+            if (!window.DeviceMotionEvent) {
+                xabar("motion-natija", "Device Motion qo'llab-quvvatlanmaydi");
+                return;
+            }
+            if (typeof DeviceMotionEvent.requestPermission === "function") {
+                try {
+                    const ruxsat = await DeviceMotionEvent.requestPermission();
+                    if (ruxsat !== "granted") {
+                        xabar("motion-natija", "Ruxsat berilmagan");
+                        return;
+                    }
+                } catch (err) {
+                    xabar("motion-natija", `Ruxsat xatoligi: ${err.message}`);
+                    return;
+                }
+            }
+            window.addEventListener("devicemotion", motionHandler);
+            $("motion-yoq").disabled = true;
+            $("motion-uchir").disabled = false;
+            xabar("motion-natija", "Harakat sensori yoqildi...");
+        });
+
+        $("motion-uchir").addEventListener("click", () => {
+            window.removeEventListener("devicemotion", motionHandler);
+            $("motion-yoq").disabled = false;
+            $("motion-uchir").disabled = true;
+            xabar("motion-natija", "Harakat sensori o'chirildi");
+        });
+
+        // ============================================
+        // 12. BILDIRISHNOMALAR — Notifications API
+        // ============================================
+        function bildirishnomaHolatiniYangilash() {
+            if (!("Notification" in window)) {
+                xabar("notif-natija", "Notifications API qo'llab-quvvatlanmaydi");
+                return;
+            }
+            const holat = Notification.permission;
+            xabar("notif-natija", `Bildirishnoma holati: ${holat}`);
+            $("notif-yuborish").disabled = holat !== "granted";
+        }
+
+        $("notif-ruk sat").addEventListener("click", async () => {
+            if (!("Notification" in window)) {
+                xabar("notif-natija", "Notifications API qo'llab-quvvatlanmaydi");
+                return;
+            }
+            const ruxsat = await Notification.requestPermission();
+            bildirishnomaHolatiniYangilash();
+            if (ruxsat === "granted") {
+                xabar("notif-natija", "✅ Bildirishnoma ruxsati berildi");
+            } else {
+                xabar("notif-natija", `❌ Ruxsat ${ruxsat}`);
+            }
+        });
+
+        $("notif-yuborish").addEventListener("click", () => {
+            if (Notification.permission !== "granted") return;
+            new Notification("Web API Laboratoriya", {
+                body: "Bu test bildirishnomasi!",
+                icon: "icon-192.png"
+            });
+            xabar("notif-natija", "🔔 Bildirishnoma yuborildi");
+        });
+
+        bildirishnomaHolatiniYangilash();
+
+        // ============================================
+        // SAHIFA YOPILGANDA RESURSLARNI TOZALASH
+        // ============================================
+        window.addEventListener("pagehide", () => {
             kameraniToxtat();
-            tugmalarniYangilash(false);
-            tozalash();
-            natijaElement.textContent = "Kamera o'chirildi.";
-        }
+            if (geolokatsiyaWatchId !== null) {
+                navigator.geolocation.clearWatch(geolokatsiyaWatchId);
+            }
+            if (wakeLockSentinel) {
+                wakeLockSentinel.release();
+            }
+        });
 
-        // Old/orqa kamerani almashtirish
-        function kameraniAlmashtir() {
-            const yangi = joriyKamera === "user" ? "environment" : "user";
-            kameraniYoq(yangi);
-        }
-
-        // Hodisalar
-        tugmaYOQ.addEventListener("click", () => kameraniYoq("user"));
-        tugmaUCHIR.addEventListener("click", kameraniUchir);
-        tugmaALMASHTIR.addEventListener("click", kameraniAlmashtir);
-
-        // Sahifa yopilganda kamerani to'xtatish
-        window.addEventListener("pagehide", kameraniToxtat);
-        window.addEventListener("beforeunload", kameraniToxtat);
-
-        // Service Worker ro'yxatdan o'tkazish (PWA uchun)
+        // ============================================
+        // SERVICE WORKER — PWA uchun
+        // ============================================
         if ("serviceWorker" in navigator) {
             window.addEventListener("load", () => {
                 navigator.serviceWorker.register("sw.js").catch(err => {
