@@ -1,43 +1,245 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#000000">
     <link rel="manifest" href="manifest.json">
-    <title>Document</title>
+    <title>Kamera Ilova</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #111;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            gap: 16px;
+        }
+
+        h1 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        #videoWrapper {
+            position: relative;
+            width: 100%;
+            max-width: 640px;
+            aspect-ratio: 4 / 3;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #ekran {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            /* OYNA EFFEKTI - faqat old kamera uchun */
+            transform: scaleX(-1);
+        }
+
+        /* Orqa kamera yoqilganda oyna effekti o'chadi */
+        #ekran.orqa-kamera {
+            transform: scaleX(1);
+        }
+
+        #natija {
+            font-size: 14px;
+            color: #ff6b6b;
+            text-align: center;
+            min-height: 20px;
+            max-width: 640px;
+            word-break: break-word;
+        }
+
+        .tugmalar {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+            max-width: 640px;
+        }
+
+        button {
+            flex: 1;
+            min-width: 140px;
+            padding: 14px 20px;
+            font-size: 15px;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+            color: #fff;
+        }
+
+        button:active {
+            transform: scale(0.97);
+        }
+
+        button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        #kamerani-yoq {
+            background: #2ecc71;
+        }
+
+        #kamerani-uchir {
+            background: #e74c3c;
+        }
+
+        #kamerani-almashtir {
+            background: #3498db;
+        }
+    </style>
 </head>
 <body>
-    <video id="ekran" width="640" autoplay>
+    <h1>📷 Kamera Ilova</h1>
 
-    </video>
+    <div id="videoWrapper">
+        <video id="ekran" autoplay playsinline muted></video>
+    </div>
+
     <p id="natija"></p>
-    <button id="kamerani-yoq">
-        KAMERANI YOQ
-    </button>
-    <button id="kamerani-uchir">
-        KAMERANI O'chir
-    </button>
+
+    <div class="tugmalar">
+        <button id="kamerani-yoq">KAMERANI YOQ</button>
+        <button id="kamerani-uchir" disabled>KAMERANI O'CHIR</button>
+        <button id="kamerani-almashtir" disabled>ALMASHTIRISH</button>
+    </div>
 
     <script>
-        const tugmaYOQ=document.getElementById("kamerani-yoq");
-        let video=null;
-        tugmaYOQ.addEventListener("click",async()=>{
-        try{
-            video=await navigator.mediaDevices.getUserMedia({video:true});
-            document.getElementById("ekran").srcObject=video;
-        }catch(err){
-            document.getElementById("natija").innerText=`xatolik kelib chiqdi ${err}`;
-        }            
-        })
+        const videoElement = document.getElementById("ekran");
+        const natijaElement = document.getElementById("natija");
+        const tugmaYOQ = document.getElementById("kamerani-yoq");
+        const tugmaUCHIR = document.getElementById("kamerani-uchir");
+        const tugmaALMASHTIR = document.getElementById("kamerani-almashtir");
 
-        document.getElementById("kamerani-uchir").addEventListener("click",()=>{
-            if(video){
-                video.getTracks().forEach(track=>track.stop());
-                video=null;
+        let stream = null;
+        let joriyKamera = "user"; // "user" = old, "environment" = orqa
+
+        // Xatoliklarni chiqarish
+        function xatolik(matn) {
+            natijaElement.textContent = matn;
+        }
+
+        function tozalash() {
+            natijaElement.textContent = "";
+        }
+
+        // Kamera oqimini to'xtatish
+        function kameraniToxtat() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
             }
-        })
+            videoElement.srcObject = null;
+        }
 
+        // Tugmalar holatini yangilash
+        function tugmalarniYangilash(aktiv) {
+            tugmaYOQ.disabled = aktiv;
+            tugmaUCHIR.disabled = !aktiv;
+            tugmaALMASHTIR.disabled = !aktiv;
+        }
 
+        // Kamerani yoqish
+        async function kameraniYoq(facingMode = "user") {
+            tozalash();
+            kameraniToxtat();
+
+            // MediaDevices mavjudligini tekshirish
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                xatolik("Brauzeringiz kamerani qo'llab-quvvatlamaydi yoki HTTPS kerak.");
+                return;
+            }
+
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: { ideal: facingMode },
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    },
+                    audio: false
+                });
+
+                videoElement.srcObject = stream;
+                joriyKamera = facingMode;
+
+                // OYNA EFFEKTI: old kamera uchun yoqiladi, orqa kamera uchun o'chiriladi
+                if (facingMode === "user") {
+                    videoElement.classList.remove("orqa-kamera");
+                } else {
+                    videoElement.classList.add("orqa-kamera");
+                }
+
+                tugmalarniYangilash(true);
+            } catch (err) {
+                let xabar = "Kamerani ochishda xatolik: ";
+                if (err.name === "NotAllowedError") {
+                    xabar += "Ruxsat berilmagan. Iltimos, brauzer sozlamalaridan kameraga ruxsat bering.";
+                } else if (err.name === "NotFoundError") {
+                    xabar += "Kamera topilmadi.";
+                } else if (err.name === "NotReadableError") {
+                    xabar += "Kamera boshqa ilova tomonidan band.";
+                } else {
+                    xabar += err.message || err.name;
+                }
+                xatolik(xabar);
+                tugmalarniYangilash(false);
+            }
+        }
+
+        // Kamerani o'chirish
+        function kameraniUchir() {
+            kameraniToxtat();
+            tugmalarniYangilash(false);
+            tozalash();
+            natijaElement.textContent = "Kamera o'chirildi.";
+        }
+
+        // Old/orqa kamerani almashtirish
+        function kameraniAlmashtir() {
+            const yangi = joriyKamera === "user" ? "environment" : "user";
+            kameraniYoq(yangi);
+        }
+
+        // Hodisalar
+        tugmaYOQ.addEventListener("click", () => kameraniYoq("user"));
+        tugmaUCHIR.addEventListener("click", kameraniUchir);
+        tugmaALMASHTIR.addEventListener("click", kameraniAlmashtir);
+
+        // Sahifa yopilganda kamerani to'xtatish
+        window.addEventListener("pagehide", kameraniToxtat);
+        window.addEventListener("beforeunload", kameraniToxtat);
+
+        // Service Worker ro'yxatdan o'tkazish (PWA uchun)
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", () => {
+                navigator.serviceWorker.register("sw.js").catch(err => {
+                    console.warn("Service Worker xatolik:", err);
+                });
+            });
+        }
     </script>
 </body>
 </html>
